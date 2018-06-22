@@ -1,7 +1,9 @@
 import os
+from datetime import datetime
+
 from flask import Blueprint, render_template, jsonify, request, session
 
-from apps.model import Area, Facility, House, HouseImage, db
+from apps.model import Area, Facility, House, HouseImage, db, Order
 from utils import status_code
 from utils.basic import UPLOAD_DIR
 from utils.function import is_login
@@ -102,10 +104,38 @@ def house_booking(id):
         house = House.query.filter_by(id=id).first()
         return jsonify(house.to_full_dict())
     if request.method == 'POST':
-        start_time = request.form.get('startime')
-        end_time = request.form.get('endtime')
-        days = end_time - start_time
 
+        start_time = datetime.strptime(request.form.get('startime'), '%Y-%m-%d')
+        end_time = datetime.strptime(request.form.get('endtime'), '%Y-%m-%d')
+        days = (end_time - start_time).days + 1
+        orders = Order()
+        orders.house_id = id
+        orders.days = days
+        orders.user_id = session['u_id']
+        orders.begin_date = start_time
+        orders.end_date = end_time
+        house = House.query.filter_by(id=id).first()
+        orders.house_price = house.price
+        orders.amount = days*house.price
+        try:
+            orders.add_update()
+        except:
+            db.session.rollback()
+            return jsonify(status_code.DATABASE_ERROR)
+        return jsonify(status_code.ok)
+
+
+@house.route('/orders/')
+def orders():
+    return render_template('orders.html')
+
+
+@house.route('/user_orders/')
+@is_login
+def user_orders():
+    user_id = session['u_id']
+    orders = Order.query.filter_by(user_id=user_id).all()
+    return jsonify([order.to_dict() for order in orders])
 
 
 @house.route('/detail/')
@@ -119,9 +149,7 @@ def house_detail(id):
     return jsonify(house.to_full_dict())
 
 
-@house.route('/orders/')
-def orders():
-    return render_template('orders.html')
+
 
 
 

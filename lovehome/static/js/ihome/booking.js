@@ -55,7 +55,9 @@ $(document).ready(function(){
         var startDate = $("#start-date").val();
         var endDate = $("#end-date").val();
         $.post('/house/house_booking/'+house_id+'/', {'startime':startDate, 'endtime':endDate}, function (data) {
-        alert(data)
+        if (data == 200){
+            location.href = '/house/orders/'
+        }
     })
     })
 

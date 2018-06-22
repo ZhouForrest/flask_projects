@@ -21,4 +21,8 @@ $(document).ready(function(){
         var orderId = $(this).parents("li").attr("order-id");
         $(".modal-comment").attr("order-id", orderId);
     });
+    $.get('/house/user_orders/', function (data) {
+        var order_html = template('orders-list-tmpl', {'orders': data});
+        $('.orders-list').html(order_html)
+    })
 });

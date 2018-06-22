@@ -22,7 +22,7 @@ def create_app():
     app.register_blueprint(blueprint=house, url_prefix='/house')
 
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:123456@localhost:3306/lvh'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:123456@localhost:3306/ihome'
 
     app.config['SECRET_KEY'] = 'secret_key'
     app.config['SESSION_TYPE'] = 'redis'
