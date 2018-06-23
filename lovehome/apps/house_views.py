@@ -149,6 +149,33 @@ def house_detail(id):
     return jsonify(house.to_full_dict())
 
 
+@house.route('/lorders/')
+def lorders():
+    return render_template('lorders.html')
+
+
+@house.route('/user_lorders/', methods=['GET', 'POST'])
+def user_lorders():
+    if request.method == 'GET':
+        houses = House.query.filter_by(user_id=session['u_id']).all()
+        house_ids = [house.id for house in houses]
+        orders = Order.query.filter(Order.house_id.in_(house_ids)).all()
+        return jsonify(code=status_code.ok, orders=[order.to_dict() for order in orders])
+    if request.method == 'POST':
+        house_id = request.form.get('house_id')
+        order = Order.query.get(house_id)
+        if request.form.get('token'):
+            order.status = 'PAID'
+        else:
+            order.comment = request.form.get('comment')
+            order.status = 'REJECTED'
+        try:
+            order.add_update()
+        except:
+            db.session.rollback()
+            return jsonify(status_code.DATABASE_ERROR)
+        return jsonify(status_code.ok)
+
 
 
 
